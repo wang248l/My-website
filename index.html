@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>理财知识测试</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      max-width: 700px;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #4a6cf7, #764ba2);
+      color: #fff;
+      padding: 32px;
+      text-align: center;
+    }
+
+    .header h1 { font-size: 28px; margin-bottom: 8px; }
+    .header p { opacity: 0.9; font-size: 15px; }
+
+    .progress-bar {
+      height: 4px;
+      background: #e9ecef;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #4a6cf7, #764ba2);
+      transition: width 0.4s ease;
+    }
+
+    .content { padding: 32px; }
+
+    /* Start screen */
+    .start-screen { text-align: center; }
+    .start-screen h2 { font-size: 22px; color: #333; margin-bottom: 16px; }
+    .start-screen p { color: #666; line-height: 1.8; margin-bottom: 24px; font-size: 15px; }
+
+    .btn {
+      display: inline-block;
+      padding: 14px 48px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      color: #fff;
+      background: linear-gradient(135deg, #4a6cf7, #764ba2);
+    }
+
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(74,108,247,0.4); }
+
+    /* Quiz */
+    .quiz-screen { display: none; }
+
+    .question-number {
+      font-size: 13px;
+      color: #4a6cf7;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .question-text {
+      font-size: 18px;
+      color: #333;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    .options { list-style: none; }
+
+    .options li {
+      border: 2px solid #e9ecef;
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: all 0.25s;
+      font-size: 15px;
+      color: #444;
+      position: relative;
+      padding-left: 48px;
+    }
+
+    .options li::before {
+      content: attr(data-label);
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: #f0f2f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: #666;
+      transition: all 0.25s;
+    }
+
+    .options li:hover {
+      border-color: #4a6cf7;
+      background: #f8f9ff;
+    }
+
+    .options li.selected {
+      border-color: #4a6cf7;
+      background: #f0f3ff;
+    }
+
+    .options li.selected::before {
+      background: #4a6cf7;
+      color: #fff;
+    }
+
+    .options li.correct {
+      border-color: #28a745;
+      background: #f0faf3;
+    }
+
+    .options li.correct::before {
+      background: #28a745;
+      color: #fff;
+    }
+
+    .options li.wrong {
+      border-color: #dc3545;
+      background: #fff5f5;
+    }
+
+    .options li.wrong::before {
+      background: #dc3545;
+      color: #fff;
+    }
+
+    .options li.disabled { pointer-events: none; }
+
+    .explanation {
+      display: none;
+      background: #f8f9fa;
+      border-left: 4px solid #4a6cf7;
+      padding: 14px 18px;
+      margin-top: 16px;
+      border-radius: 0 8px 8px 0;
+      font-size: 14px;
+      color: #555;
+      line-height: 1.7;
+    }
+
+    .nav-btn {
+      margin-top: 24px;
+      text-align: right;
+    }
+
+    .nav-btn .btn { padding: 12px 36px; font-size: 15px; }
+
+    /* Result screen */
+    .result-screen { display: none; text-align: center; }
+
+    .score-circle {
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #4a6cf7, #764ba2);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+      color: #fff;
+    }
+
+    .score-circle .score { font-size: 48px; font-weight: 700; line-height: 1; }
+    .score-circle .label { font-size: 14px; opacity: 0.9; margin-top: 4px; }
+
+    .result-title { font-size: 22px; color: #333; margin-bottom: 8px; }
+    .result-desc { color: #666; line-height: 1.7; margin-bottom: 24px; font-size: 15px; }
+
+    .result-details {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      margin-bottom: 28px;
+    }
+
+    .result-details .item { text-align: center; }
+    .result-details .num { font-size: 28px; font-weight: 700; }
+    .result-details .num.green { color: #28a745; }
+    .result-details .num.red { color: #dc3545; }
+    .result-details .txt { font-size: 13px; color: #999; margin-top: 2px; }
+
+    .btn-group { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn-outline {
+      padding: 12px 36px;
+      border: 2px solid #4a6cf7;
+      border-radius: 8px;
+      background: transparent;
+      color: #4a6cf7;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .btn-outline:hover { background: #f0f3ff; }
+
+    @media (max-width: 480px) {
+      .content { padding: 24px 18px; }
+      .header { padding: 24px 18px; }
+      .header h1 { font-size: 22px; }
+      .question-text { font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>理财知识测试</h1>
+    <p>测试您的理财知识水平，提升财富管理能力</p>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+
+  <div class="content">
+    <!-- Start -->
+    <div class="start-screen" id="startScreen">
+      <h2>欢迎参加理财知识测试</h2>
+      <p>
+        本测试共 <strong>15 道题</strong>，涵盖储蓄、投资、风险管理、税务等理财核心知识。<br>
+        每道题选择后会显示答案解析，帮助您学习理财知识。<br>
+        准备好了吗？
+      </p>
+      <button class="btn" onclick="startQuiz()">开始测试</button>
+    </div>
+
+    <!-- Quiz -->
+    <div class="quiz-screen" id="quizScreen">
+      <div class="question-number" id="questionNumber"></div>
+      <div class="question-text" id="questionText"></div>
+      <ul class="options" id="optionsList"></ul>
+      <div class="explanation" id="explanation"></div>
+      <div class="nav-btn">
+        <button class="btn" id="nextBtn" style="display:none" onclick="nextQuestion()">下一题</button>
+      </div>
+    </div>
+
+    <!-- Result -->
+    <div class="result-screen" id="resultScreen">
+      <div class="score-circle">
+        <div class="score" id="scoreNum">0</div>
+        <div class="label">得分</div>
+      </div>
+      <div class="result-title" id="resultTitle"></div>
+      <div class="result-desc" id="resultDesc"></div>
+      <div class="result-details">
+        <div class="item"><div class="num green" id="correctCount">0</div><div class="txt">答对</div></div>
+        <div class="item"><div class="num red" id="wrongCount">0</div><div class="txt">答错</div></div>
+      </div>
+      <div class="btn-group">
+        <button class="btn-outline" onclick="reviewAnswers()">查看解析</button>
+        <button class="btn" onclick="restartQuiz()">重新测试</button>
+      </div>
+
+      <div id="reviewSection" style="display:none;margin-top:32px;text-align:left">
+        <h3 style="margin-bottom:16px;color:#333">答题详情</h3>
+        <div id="reviewList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const questions = [
+  {
+    q: "以下哪种存款方式的利率通常最高？",
+    options: ["活期存款", "三个月定期存款", "一年定期存款", "五年定期存款"],
+    answer: 3,
+    explain: "一般来说，定期存款期限越长，利率越高。五年定期存款的利率通常高于其他较短期限的存款，这是因为储户承担了更长时间的流动性风险。"
+  },
+  {
+    q: "\"不要把所有鸡蛋放在一个篮子里\"体现的是哪种理财原则？",
+    options: ["收益最大化原则", "分散投资原则", "集中投资原则", "短期投资原则"],
+    answer: 1,
+    explain: "这句话体现的是分散投资（资产配置）原则。通过将资金分散投资于不同的资产类别，可以有效降低单一投资带来的风险，是现代投资组合理论的核心思想。"
+  },
+  {
+    q: "以下哪项不属于个人理财的\"三大基石\"？",
+    options: ["储蓄", "保险", "投资", "借贷"],
+    answer: 3,
+    explain: "个人理财的三大基石通常指储蓄（积累本金）、保险（风险保障）和投资（资产增值）。借贷虽然是理财工具之一，但不属于三大基石。"
+  },
+  {
+    q: "复利的计算方式是什么？",
+    options: ["只对本金计算利息", "对本金和累积利息一起计算利息", "每年利息固定不变", "利息逐年递减"],
+    answer: 1,
+    explain: "复利是\"利滚利\"，即每期利息会加入本金，下一期的利息基于（本金+累积利息）来计算。爱因斯坦称复利为\"世界第八大奇迹\"，长期来看复利效应非常显著。"
+  },
+  {
+    q: "通货膨胀对个人储蓄的影响是什么？",
+    options: ["增加储蓄的实际购买力", "降低储蓄的实际购买力", "对储蓄没有影响", "使存款利率自动上升"],
+    answer: 1,
+    explain: "通货膨胀意味着物价持续上涨，同样的钱能买到的东西变少了。如果存款利率低于通胀率，储蓄的实际购买力就会下降，这就是所谓的\"负利率\"现象。"
+  },
+  {
+    q: "以下哪种投资产品的风险通常最高？",
+    options: ["国债", "银行定期存款", "股票", "货币基金"],
+    answer: 2,
+    explain: "在这四种投资产品中，股票的风险最高但潜在收益也最大。国债有国家信用背书，银行定期存款受存款保险保护，货币基金投资于短期货币工具，风险都相对较低。"
+  },
+  {
+    q: "什么是\"72法则\"？",
+    options: ["投资必须持有72天才能盈利", "用72除以年收益率可以估算资产翻倍所需年数", "投资组合应包含72种资产", "每年储蓄收入的72%"],
+    answer: 1,
+    explain: "72法则是一个简便的估算公式：用72除以年收益率（百分数），即可大致得出资产翻倍所需的年数。例如年收益率8%，则72÷8=9年翻倍。"
+  },
+  {
+    q: "基金定投的核心优势是什么？",
+    options: ["保证不亏损", "一次性获得最高收益", "平摊成本、降低择时风险", "随时可以免费赎回"],
+    answer: 2,
+    explain: "基金定投通过定期定额买入，在市场高点买入较少份额、低点买入较多份额，从而平摊投资成本，避免了一次性投入在高点的风险，适合普通投资者长期投资。"
+  },
+  {
+    q: "个人紧急备用金通常建议准备多少？",
+    options: ["1个月生活费", "3-6个月生活费", "1年生活费", "越多越好"],
+    answer: 1,
+    explain: "理财专家通常建议准备3-6个月的生活费作为紧急备用金，存放在活期存款或货币基金等高流动性产品中，以应对突发事件如失业、疾病等。"
+  },
+  {
+    q: "以下关于信用卡的说法，哪个是正确的？",
+    options: ["信用卡取现没有手续费", "只还最低还款额不会产生利息", "信用卡透支利率通常远高于银行贷款利率", "信用卡额度越高越好"],
+    answer: 2,
+    explain: "信用卡透支利率通常为日息万分之五（年化约18%），远高于银行贷款利率。取现通常有手续费，只还最低还款额会产生高额利息，额度过高可能导致过度消费。"
+  },
+  {
+    q: "\"资产负债表\"中，净资产的计算公式是什么？",
+    options: ["总收入 - 总支出", "总资产 - 总负债", "总资产 + 总负债", "总收入 + 总资产"],
+    answer: 1,
+    explain: "净资产 = 总资产 - 总负债。这是衡量个人或家庭财务健康状况的核心指标。总资产包括房产、存款、投资等，总负债包括房贷、车贷、信用卡欠款等。"
+  },
+  {
+    q: "以下哪种行为最有利于建立良好的个人信用记录？",
+    options: ["从不使用信用卡", "多次申请不同银行的信用卡", "按时足额还款", "经常使用最低还款额"],
+    answer: 2,
+    explain: "按时足额还款是建立良好信用记录最重要的方式。从不使用信用卡无法建立信用历史，频繁申卡和使用最低还款都可能负面影响信用评分。"
+  },
+  {
+    q: "购买保险时，\"保额\"指的是什么？",
+    options: ["每月缴纳的保费金额", "保险合同约定的最高赔付金额", "保险公司的注册资本", "保险产品的市场价格"],
+    answer: 1,
+    explain: "保额是保险合同约定的最高赔付金额，即出险时保险公司最多赔付的金额。保额和保费不同，保费是投保人定期缴纳的费用，保额是保障的上限。"
+  },
+  {
+    q: "关于债券和股票，以下说法正确的是？",
+    options: ["债券持有人是公司的股东", "股票的收益通常比债券更稳定", "债券通常有固定的利息收入", "股票到期必须偿还本金"],
+    answer: 2,
+    explain: "债券是一种债权凭证，通常有固定的利息收入和到期还本。而股票代表所有权，收益不固定且波动大。债券持有人是债权人而非股东，股票没有到期还本的义务。"
+  },
+  {
+    q: "以下哪种情况最可能导致投资亏损？",
+    options: ["长期持有优质资产", "分散投资于多种资产", "追涨杀跌、频繁交易", "定期审视和调整投资组合"],
+    answer: 2,
+    explain: "追涨杀跌是最常见的投资误区：在市场高涨时贪婪买入，下跌时恐慌卖出，结果\"高买低卖\"造成亏损。长期持有、分散投资和定期审视都是理性的投资策略。"
+  }
+];
+
+const labels = ["A", "B", "C", "D"];
+let currentIndex = 0;
+let score = 0;
+let correctNum = 0;
+let userAnswers = [];
+
+function startQuiz() {
+  document.getElementById("startScreen").style.display = "none";
+  document.getElementById("quizScreen").style.display = "block";
+  currentIndex = 0;
+  score = 0;
+  correctNum = 0;
+  userAnswers = [];
+  showQuestion();
+}
+
+function showQuestion() {
+  const q = questions[currentIndex];
+  document.getElementById("questionNumber").textContent = `第 ${currentIndex + 1} 题 / 共 ${questions.length} 题`;
+  document.getElementById("questionText").textContent = q.q;
+  document.getElementById("progressFill").style.width = ((currentIndex) / questions.length * 100) + "%";
+
+  const list = document.getElementById("optionsList");
+  list.innerHTML = "";
+  q.options.forEach((opt, i) => {
+    const li = document.createElement("li");
+    li.textContent = opt;
+    li.setAttribute("data-label", labels[i]);
+    li.onclick = () => selectAnswer(i);
+    list.appendChild(li);
+  });
+
+  document.getElementById("explanation").style.display = "none";
+  document.getElementById("nextBtn").style.display = "none";
+}
+
+function selectAnswer(idx) {
+  const q = questions[currentIndex];
+  const items = document.querySelectorAll("#optionsList li");
+
+  items.forEach(li => li.classList.add("disabled"));
+  userAnswers.push(idx);
+
+  if (idx === q.answer) {
+    items[idx].classList.add("correct");
+    correctNum++;
+  } else {
+    items[idx].classList.add("wrong");
+    items[q.answer].classList.add("correct");
+  }
+
+  const expEl = document.getElementById("explanation");
+  expEl.textContent = q.explain;
+  expEl.style.display = "block";
+
+  const nextBtn = document.getElementById("nextBtn");
+  nextBtn.style.display = "inline-block";
+  nextBtn.textContent = currentIndex < questions.length - 1 ? "下一题" : "查看结果";
+}
+
+function nextQuestion() {
+  currentIndex++;
+  if (currentIndex < questions.length) {
+    showQuestion();
+  } else {
+    showResult();
+  }
+}
+
+function showResult() {
+  document.getElementById("quizScreen").style.display = "none";
+  document.getElementById("resultScreen").style.display = "block";
+  document.getElementById("progressFill").style.width = "100%";
+
+  score = Math.round(correctNum / questions.length * 100);
+  document.getElementById("scoreNum").textContent = score;
+  document.getElementById("correctCount").textContent = correctNum;
+  document.getElementById("wrongCount").textContent = questions.length - correctNum;
+
+  let title, desc;
+  if (score >= 90) {
+    title = "理财达人";
+    desc = "您的理财知识非常扎实，具备出色的财务管理能力。继续保持学习，财富自由指日可待！";
+  } else if (score >= 70) {
+    title = "理财能手";
+    desc = "您具备良好的理财基础知识，建议继续深入学习投资和税务规划等方面的知识，进一步提升财商。";
+  } else if (score >= 50) {
+    title = "理财新手";
+    desc = "您对理财有一定的了解，但还有提升空间。建议多阅读理财书籍，学习基本的储蓄、投资和风险管理知识。";
+  } else {
+    title = "理财小白";
+    desc = "理财知识还需要加强哦！建议从基础开始，学习储蓄习惯、预算管理等入门知识，逐步建立理财意识。";
+  }
+
+  document.getElementById("resultTitle").textContent = title;
+  document.getElementById("resultDesc").textContent = desc;
+  document.getElementById("reviewSection").style.display = "none";
+}
+
+function reviewAnswers() {
+  const section = document.getElementById("reviewSection");
+  if (section.style.display === "block") {
+    section.style.display = "none";
+    return;
+  }
+
+  const list = document.getElementById("reviewList");
+  list.innerHTML = "";
+
+  questions.forEach((q, i) => {
+    const isCorrect = userAnswers[i] === q.answer;
+    const div = document.createElement("div");
+    div.style.cssText = "margin-bottom:20px;padding:16px;background:#f8f9fa;border-radius:10px;border-left:4px solid " + (isCorrect ? "#28a745" : "#dc3545");
+    div.innerHTML = `
+      <div style="font-weight:600;margin-bottom:8px;color:#333">
+        ${i + 1}. ${q.q}
+        <span style="color:${isCorrect ? '#28a745' : '#dc3545'};margin-left:8px">${isCorrect ? '✓' : '✗'}</span>
+      </div>
+      <div style="font-size:14px;color:#555;margin-bottom:4px">
+        您的答案：${labels[userAnswers[i]]}. ${q.options[userAnswers[i]]}
+        ${!isCorrect ? '<br>正确答案：' + labels[q.answer] + '. ' + q.options[q.answer] : ''}
+      </div>
+      <div style="font-size:13px;color:#888;margin-top:8px;line-height:1.6">${q.explain}</div>
+    `;
+    list.appendChild(div);
+  });
+
+  section.style.display = "block";
+}
+
+function restartQuiz() {
+  document.getElementById("resultScreen").style.display = "none";
+  document.getElementById("startScreen").style.display = "block";
+  document.getElementById("progressFill").style.width = "0%";
+}
+</script>
+
+</body>
+</html>
